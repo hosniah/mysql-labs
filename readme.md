@@ -1,6 +1,5 @@
-# Format SQL 
 
-## Installation de Virtualbox, Vagrant et  git bash.
+## Dépendances: Installation de Virtualbox, Vagrant et git bash.
 
 ## Commandes Vagrant utiles
 	Vagrant box add + nom de la boite, comme dans l’exemple au-dessus, cela rajoute une boite
@@ -23,5 +22,5 @@ Tous ce qu’il vous reste à faire est de démarrer la machine avec la commande
 
 
 ## Chargement d'un dumpe de base de données sample_db:
->mysql create database sample_db
+> mysql create database sample_db
 > mysql -u root sample_db < sample_db.sql
