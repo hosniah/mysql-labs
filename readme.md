@@ -21,6 +21,9 @@ Tous ce qu’il vous reste à faire est de démarrer la machine avec la commande
 > mysql -u root -p
 
 
-## Chargement d'un dumpe de base de données sample_db:
-> mysql create database sample_db
-> mysql -u root sample_db < sample_db.sql
+## Chargement d'un dumpe de base de données CAVE_TEST:
+> wet https://raw.githubusercontent.com/hosniah/mysql-labs/master/Samples/Some_Test_Data.sql
+
+> mysql create database CAVE_TEST
+
+> mysql -u root CAVE_TEST < Some_Test_Data.sql
