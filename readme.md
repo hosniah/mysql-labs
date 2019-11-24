@@ -26,4 +26,4 @@ Tous ce qu’il vous reste à faire est de démarrer la machine avec la commande
 
 > mysql create database CAVE_TEST
 
-> mysql -u root CAVE_TEST < Some_Test_Data.sql
+> mysql -u root CAVE_TEST -p < Some_Test_Data.sql
