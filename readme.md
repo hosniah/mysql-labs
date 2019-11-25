@@ -22,7 +22,7 @@ Tous ce qu’il vous reste à faire est de démarrer la machine avec la commande
 
 
 ## Chargement d'un dumpe de base de données CAVE_TEST:
-> wet https://raw.githubusercontent.com/hosniah/mysql-labs/master/Samples/Some_Test_Data.sql
+> wget https://raw.githubusercontent.com/hosniah/mysql-labs/master/Samples/Some_Test_Data.sql
 
 > mysql create database CAVE_TEST
 
