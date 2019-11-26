@@ -1,0 +1,34 @@
+CAMPINGS(idCamping,nomCamping,villeCamping,nbEtoilesCamping)
+BUNGALOWS(idBungalow, nomBungalow, superficieBungalow, idCamping#)
+SERVICES(idService, nomService, categorieService)
+PROPOSER(idBungalow#, idService#)
+CLIENTS(idClient, nomClient, prenomClient, villeClient)
+LOCATIONS(idLocation, idClient#, idBungalow#, dateDebut, dateFin, montantLocation)
+EMPLOYES(idEmploye, nomEmploye, prenomEmploye, salaireEmploye, idCamping#, idEmployeChef#)
+
+
+--le nom des bungalows qui proposent tous les services
+-- (c'est-à-dire tous les services qui
+--sont dans la table Services).
+--Réaliser cette division d’au moins deux façons différentes
+ 
+ 
+SELECT B.nombungalow
+FROM Bungalows B
+WHERE B.idBungalow IN
+    (SELECT P.idBungalow
+    FROM Proposer P
+    GROUP BY P.idBungalow
+    HAVING COUNT(*) = (SELECT COUNT(*)
+               FROM Service);
+ 
+ 
+SELECT B.nombungalow
+FROM Bungalows B
+WHERE NOT EXISTS
+        (SELECT S.idService
+        FROM Services S
+        MINUS
+        SELECT P.idService
+        FROM Proposer P
+        WHERE B.idBungalow = P.idBungalow);
