@@ -7,10 +7,10 @@ begin
 
     declare current_balance numeric(7, 2) default 0.0;
     
+    select balance into @current_balance from accounts where id=account_id;
+ 
     select @current_balance;
-
-    select balance into current_balance from accounts where id=account_id;
-
+    
     if current_balance >= amount then
 		update accounts set balance = balance - amount where id=account_id;
         set success=true;
