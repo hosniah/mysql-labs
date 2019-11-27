@@ -6,6 +6,8 @@ create procedure withdraw(in account_id int, in amount numeric(7, 2), out succes
 begin
 
     declare current_balance numeric(7, 2) default 0.0;
+    
+    select @current_balance;
 
     select balance into current_balance from accounts where id=account_id;
 
