@@ -1,0 +1,152 @@
+# Vérifier l'état courant de SSL/TLS:
+
+> mysql -u root -p -h 127.0.0.1
+
+mysql> SHOW VARIABLES LIKE '%ssl%';
+
++---------------+----------+
+| Variable_name | Value    |
++---------------+----------+
+| have_openssl  | DISABLED |
+| have_ssl      | DISABLED |
+| ssl_ca        |          |
+| ssl_capath    |          |
+| ssl_cert      |          |
+| ssl_cipher    |          |
+| ssl_crl       |          |
+| ssl_crlpath   |          |
+| ssl_key       |          |
++---------------+----------+
+9 rows in set (0.01 sec)
+
+mysql> \s
+
+--------------
+mysql  Ver 14.14 Distrib 5.7.17, for Linux (x86_64) using  EditLine wrapper
+
+Connection id:      30
+Current database:   
+Current user:       root@localhost
+SSL:         Not in use
+Current pager:      stdout
+Using outfile:      ''
+Using delimiter:    ;
+Server version:     5.7.17-0ubuntu0.16.04.1 (Ubuntu)
+Protocol version:   10
+Connection:      127.0.0.1 via TCP/IP
+Server characterset:    latin1
+Db     characterset:    latin1
+Client characterset:    utf8
+Conn.  characterset:    utf8
+TCP port:       3306
+Uptime:         3 hours 38 min 44 sec
+
+Threads: 1  Questions: 70  Slow queries: 0  Opens: 121  Flush tables: 1  Open tables: 40  Queries per second avg: 0.005
+--------------
+
+# Générer les certificats SSL/TLS et les clés
+
+>sudo mysql_ssl_rsa_setup --uid=mysql
+
+Generating a 2048 bit RSA private key
+...................................+++
+.....+++
+writing new private key to 'ca-key.pem'
+-----
+Generating a 2048 bit RSA private key
+......+++
+.................................+++
+writing new private key to 'server-key.pem'
+-----
+Generating a 2048 bit RSA private key
+......................................................+++
+.................................................................................+++
+writing new private key to 'client-key.pem'
+-----
+
+>sudo find /var/lib/mysql -name '*.pem' -ls
+
+   256740      4 -rw-r--r--   1 mysql    mysql        1078 Mar 17 17:24 /var/lib/mysql/server-cert.pem
+   256735      4 -rw-------   1 mysql    mysql        1675 Mar 17 17:24 /var/lib/mysqlsql/ca-key.pem
+   256739      4 -rw-r--r--   1 mysql    mysql         451 Mar 17 17:24 /var/lib/mysqlsql/public_key.pem
+   256741      4 -rw-------   1 mysql    mysql        1679 Mar 17 17:24 /var/lib/mysqlsql/client-key.pem
+   256737      4 -rw-r--r--   1 mysql    mysql        1074 Mar 17 17:24 /var/lib/mysqlsql/ca.pem
+   256743      4 -rw-r--r--   1 mysql    mysql        1078 Mar 17 17:24 /var/lib/mysqlsql/client-cert.pem
+   256736      4 -rw-------   1 mysql    mysql        1675 Mar 17 17:24 /var/lib/mysqlsql/private_key.pem
+   256738      4 -rw-------   1 mysql    mysql        1675 Mar 17 17:24 /var/lib/mysqlsql/server-key.pem
+
+#Activer les connexions SSL sur le serveur Mysql
+
+> mysql -u root -p -h 127.0.0.1
+
+mysql> SHOW VARIABLES LIKE '%ssl%';
+
++---------------+-----------------+
+| Variable_name | Value           |
++---------------+-----------------+
+| have_openssl  | YES             |
+| have_ssl      | YES             |
+| ssl_ca        | ca.pem          |
+| ssl_capath    |                 |
+| ssl_cert      | server-cert.pem |
+| ssl_cipher    |                 |
+| ssl_crl       |                 |
+| ssl_crlpath   |                 |
+| ssl_key       | server-key.pem  |
++---------------+-----------------+
+9 rows in set (0.00 sec)
+
+mysql> \s
+
+--------------
+. . .
+SSL:            Cipher in use is DHE-RSA-AES256-SHA
+. . .
+Connection:      127.0.0.1 via TCP/IP
+. . .
+--------------
+
+# Configuration des connexions sécurisées pour les clients distants
+
+> editer le fichier /etc/mysql/my.cnf, rajouter l'option require_secure_transport:
+. . .
+
+!includedir /etc/mysql/conf.d/
+!includedir /etc/mysql/mysql.conf.d/
+
+[mysqld]
+# Require clients to connect either using SSL
+# or through a local socket file
+require_secure_transport = ON
+bind-address = 0.0.0.0
+
+> sudo systemctl restart mysql
+
+> udo netstat -plunt
+
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 0.0.0.0:3306            0.0.0.0:*               LISTEN      4330/mysqld     
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1874/sshd       
+tcp6       0      0 :::22                   :::*                    LISTEN      1874/sshd
+
+>sudo ufw allow mysql
+
+Rule added
+Rule added (v6) 
+
+# Configurer un utilisateur Mysql distant
+
+mysql> CREATE USER 'remote_user'@'mysql_client_IP' IDENTIFIED BY 'password' REQUIRE SSL;
+mysql>CREATE DATABASE example;
+mysql>GRANT ALL ON example.* TO 'remote_user'@'mysql_client_IP';
+mysql>FLUSH PRIVILEGES;
+mysql>exit
+
+# Tester la connection:
+
+> mysql -u remote_user -p [-h mysql_client_IP]
+
+
+> sudo mysql -u remote_user -p [-h mysql_client_IP] --ssl-ca=/var/lib/mysql/ca.pem --ssl-cert=/var/lib/mysql/client-cert.pem --ssl-key=/var/lib/mysql/client-key.pem
+mysql> exit
