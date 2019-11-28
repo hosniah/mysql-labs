@@ -1,0 +1,51 @@
+* Installation de docker-compose:
+
+> sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+> sudo chmod +x /usr/local/bin/docker-compose
+> docker-compose --version
+
+https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-18-04
+
+* lancer le script ./build.sh
+
+
+* Exécution:
+
+Pour exécuter cet exemple, vous devrez démarrer les conteneurs avec "docker-compose" et après avoir démarré la configuration de la réplication.
+Voir les commandes dans . /build.sh.
+
+Créer 2 conteneurs Mysql avec réplication en ligne maître-esclave
+> sudo ./build.sh
+
+Apporter des changements au master:
+> sudo docker exec mysql_master sh -c "export MYSQL_PWD=111; mysql -u root mydb -e 'create table code(code int); insert into code values (100), (200)'"
+
+Lire les changement depuis l'esclave:
+> sudo docker exec mysql_slave sh -c "export MYSQL_PWD=111; mysql -u root mydb -e 'select * from code \G'"
+
+
+* Dépannage:
+Vérifier les journaux
+> sudo docker-compose logs
+
+Démarrer les conteneurs en mode "normal" (sans docker-compose)
+>Passez à travers le script shell et exécutez la commande étape par étape.
+
+Vérifier les conteneurs en marche:
+> sudo docker-compose ps
+
+Lancer la commande dans "mysql_master":
+> sudo docker exec mysql_master sh -c 'mysql -u root -p111 -e "SHOW MASTER STATUS \G"'
+
+Lancer la commande dans "mysql_slave":
+> sudo docker exec mysql_slave sh -c 'mysql -u root -p111 -e "SHOW SLAVE STATUS \G"'
+
+Accéder au conteneur "mysql_master":
+> sudo docker exec -it mysql_master bash
+
+Accéder au conteneur "mysql_master":
+> sudo docker exec -it mysql_slave bash
+
+Nettoyer le dossier data:
+> rm -rf ./master/data/*
+> rm -rf ./slave/data/*
