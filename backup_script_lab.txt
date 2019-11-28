@@ -46,4 +46,4 @@ Rajouter les permissions  nécessaires à l'execution de ce fichier.
 
 >crontab -e
 add this line:
-*/10 * * * * /var/www/tnxpress_scripts/mysql_backup.sh
+*/10 * * * * /mysql_backup.sh
