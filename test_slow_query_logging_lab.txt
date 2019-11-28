@@ -1,0 +1,65 @@
+mysql> SET GLOBAL slow_query_log=1;
+
+mysql> SELECT @@slow_query_log;
++------------------+
+| @@slow_query_log |
++------------------+
+|                1 |
++------------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT @@slow_query_log_file;
++---------------------------------------+
+| @@slow_query_log_file                 |
++---------------------------------------+
+| /var/lib/mysql/ubuntu-bionic-slow.log |
++---------------------------------------+
+1 row in set (0.00 sec)
+
+-- Maintenant on va créer une requête lente:
+
+use m2iDB;
+SELECT SLEEP(2);
+
+DELIMITER $$
+DROP FUNCTION IF EXISTS `iterateSleep` $$
+CREATE FUNCTION `iterateSleep` (iterations INT)
+RETURNS INT DETERMINISTIC
+BEGIN
+    DECLARE remainder INT;
+
+    SET remainder = iterations;
+
+    read_loop: LOOP     
+        IF remainder=0 THEN
+            LEAVE read_loop;
+        END IF;
+
+        SELECT SLEEP(2) INTO @test;
+        SET remainder = remainder - 1; 
+    END LOOP;
+
+    RETURN iterations;
+END $$
+DELIMITER ;
+
+-- TO TEST IT OUT
+mysql> SELECT iterateSleep(8);
++-----------------+
+| iterateSleep(8) |
++-----------------+
+|               8 |
++-----------------+
+1 row in set (16.01 sec)
+
+-- Vérifier aprés le fichier de log:
+root@ubuntu-bionic:~# tail /var/lib/mysql/ubuntu-bionic-slow.log
+/usr/sbin/mysqld, Version: 5.7.28-0ubuntu0.18.04.4-log ((Ubuntu)). started with:
+Tcp port: 3306  Unix socket: /var/run/mysqld/mysqld.sock
+Time                 Id Command    Argument
+# Time: 2019-11-27T12:22:56.550560Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 16.013204  Lock_time: 0.000504 Rows_sent: 1  Rows_examined: 0
+use m2iDB;
+SET timestamp=1574857376;
+SELECT iterateSleep(8);
