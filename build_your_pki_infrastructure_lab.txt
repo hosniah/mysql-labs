@@ -1,0 +1,31 @@
+Génération d’une Autorité de Certification  et d'une clé SSL
+
+# Assurez-vous que Openssl et les bibliothèques sont installées :
+
+> apt-get -y install openssl
+> apt-get -y install libssl-dev
+
+# Ensuite, créez un répertoire pour les fichiers SSL :
+
+> mkdir /home/ubuntu/mysqlcerts
+> cd /home/ubuntu/mysqlcerts
+
+# Pour générer des clés, créez une autorité de certification (CA) pour signer les clés (auto-signé) :
+
+> openssl genrsa 2048 > ca-key.pem
+> openssl req -new -x509 -nodes -days 3600 -key ca-key.pem -out ca.pem
+
+# Les valeurs saisies à chaque invite n’affecteront pas la configuration. Ensuite, créez une clé pour le serveur, et signez en utilisant le CA d’avant :
+
+> openssl req -newkey rsa:2048 -days 3600 -nodes -keyout server-key.pem -out server-req.pem
+> openssl rsa -in server-key.pem -out server-key.pem
+> openssl x509 -req -in server-req.pem -days 3600 -CA ca.pem -CAkey ca-key.pem -set_serial 01 -out server-cert.pem
+
+# Puis créer une clé pour un client:
+
+> openssl req -newkey rsa:2048 -days 3600 -nodes -keyout client-key.pem -out client-req.pem
+> openssl rsa -in client-key.pem -out client-key.pem
+> openssl x509 -req -in client-req.pem -days 3600 -CA ca.pem -CAkey ca-key.pem -set_serial 01 -out client-cert.pem
+
+# Pour vous assurer que tout a été configuré correctement, vérifiez les clés:
+> openssl verify -CAfile ca.pem server-cert.pem client-cert.pem
