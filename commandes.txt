@@ -1,0 +1,6 @@
+#
+
+# Installer MySQL version 5.7 sur un serveur Ubuntu 18.04.
+# https://www.digitalocean.com/community/tutorials/comment-installer-mysql-sur-ubuntu-18-04-fr
+# https://www.digitalocean.com/community/tutorials/how-to-secure-mysql-and-mariadb-databases-in-a-linux-vps
+# https://www.digitalocean.com/community/tutorials/how-to-move-a-mysql-data-directory-to-a-new-location-on-ubuntu-16-04
